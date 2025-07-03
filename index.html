@@ -115,7 +115,7 @@
             try {
                 // --- THIS IS THE FIX ---
                 // Now calling the real backend server instead of mock data.
-                const apiUrl = `https://panchang-api-5l7x.vercel.app//panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
+                const apiUrl = `https://panchang-api-5l7x.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
