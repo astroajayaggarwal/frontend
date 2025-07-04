@@ -58,7 +58,7 @@
             border-bottom: 1px solid #d1d5db; /* Neutral gray border */
             text-align: left;
             font-size: 0.875rem; /* text-sm for increased font size */
-            white-space: nowrap; /* Prevent text wrapping in cells */
+            /* white-space: nowrap; /* Removed to allow text wrapping */
         }
         .panchang-table th {
             background-color: #e5e7eb; /* Light gray header background */
@@ -206,7 +206,7 @@
 
             try {
                 // NOTE: Ensure your Flask server is running on http://127.0.0.1:5000
-                const apiUrl = `https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
+                const apiUrl = `http://127.0.0.1:5000/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
