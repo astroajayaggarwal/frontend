@@ -121,6 +121,44 @@
         .detail-row-content p:last-child {
             margin-bottom: 0;
         }
+
+        /* Autocomplete suggestions styling */
+        #suggestions-list {
+            position: absolute;
+            z-index: 20;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            width: calc(100% - 2rem); /* Adjust to match input width */
+            margin-top: 0.25rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #suggestions-list div {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        #suggestions-list div:last-child {
+            border-bottom: none;
+        }
+        #suggestions-list div:hover {
+            background-color: #f3f4f6;
+        }
+        #suggestions-loader {
+            display: none;
+            margin-top: 0.5rem;
+            margin-left: 0.5rem;
+        }
+        .small-loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db; /* Blue for suggestion loader */
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -145,9 +183,13 @@
                     <label for="endDate" class="block text-base font-semibold text-gray-700 mb-1">End Date</label>
                     <input type="date" id="endDate" name="endDate" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
                 </div>
-                <div>
+                <div class="relative"> <!-- Added relative positioning for suggestions list -->
                     <label for="location" class="block text-base font-semibold text-gray-700 mb-1">Location</label>
-                    <input type="text" id="location" name="location" placeholder="e.g., New Delhi, India" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <input type="text" id="location" name="location" placeholder="Detecting location..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required autocomplete="off">
+                    <div id="suggestions-loader" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                        <div class="small-loader"></div>
+                    </div>
+                    <div id="suggestions-list" class="hidden"></div> <!-- Suggestions will appear here -->
                 </div>
                 <div class="md:col-span-3 text-center mt-4">
                     <button type="submit" class="w-full md:w-auto px-12 py-3 rounded-lg btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -175,10 +217,86 @@
         const loader = document.getElementById('loader');
         const errorMessage = document.getElementById('error-message');
         const panchangDataContainer = document.getElementById('panchang-data');
+        const locationInput = document.getElementById('location');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const suggestionsLoader = document.getElementById('suggestions-loader');
+
+        // --- Global Variables ---
+        let debounceTimer;
 
         // --- Event Listeners ---
         panchangForm.addEventListener('submit', handleFormSubmit);
         panchangDataContainer.addEventListener('click', handleExpandClick);
+        locationInput.addEventListener('input', handleLocationInput);
+        suggestionsList.addEventListener('click', handleSuggestionClick);
+        document.addEventListener('click', handleDocumentClick); // To hide suggestions when clicking outside
+        document.addEventListener('DOMContentLoaded', initializeLocation); // Autodetect location on load
+
+        /**
+         * Initializes location detection on page load.
+         */
+        function initializeLocation() {
+            if (navigator.geolocation) {
+                locationInput.placeholder = "Detecting location...";
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        console.log(`Geolocation successful: Lat ${lat}, Lng ${lng}`);
+                        try {
+                            // Use GeoNames reverse geocoding API to get city/state from coordinates
+                            // NOTE: This assumes your backend has a /reverse_geocode endpoint or similar
+                            // For now, we'll use the /suggest_locations endpoint with a query based on coordinates
+                            // A more robust solution would be a dedicated reverse geocoding endpoint in app.py
+                            const reverseGeocodeUrl = `http://api.geonames.org/findNearestAddressJSON?lat=${lat}&lng=${lng}&username=YOUR_GEONAMES_USERNAME`; // Replace with your username
+                            const response = await fetch(reverseGeocodeUrl);
+                            const data = await response.json();
+
+                            let detectedLocation = "Unknown Location";
+                            if (data && data.address && data.address.street) {
+                                // GeoNames findNearestAddressJSON returns street and postal code, not always city/state directly
+                                // A better endpoint for city/state would be findNearestPlaceNameJSON
+                                const placeNameUrl = `http://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=YOUR_GEONAMES_USERNAME`; // Replace with your username
+                                const placeResponse = await fetch(placeNameUrl);
+                                const placeData = await placeResponse.json();
+
+                                if (placeData && placeData.geonames && placeData.geonames.length > 0) {
+                                    const place = placeData.geonames[0];
+                                    detectedLocation = place.name;
+                                    if (place.adminName1 && place.adminName1.toLowerCase() !== place.name.toLowerCase()) {
+                                        detectedLocation += `, ${place.adminName1}`;
+                                    }
+                                    if (place.countryName && place.countryName.toLowerCase() !== place.name.toLowerCase() && place.countryName.toLowerCase() !== place.adminName1.toLowerCase()) {
+                                        detectedLocation += `, ${place.countryName}`;
+                                    }
+                                } else {
+                                    console.warn("Could not find nearest place name for autodetected coordinates.");
+                                    // Fallback to a more generic display if place name not found
+                                    detectedLocation = `Lat: ${lat.toFixed(2)}, Lng: ${lng.toFixed(2)}`;
+                                }
+                            } else {
+                                console.warn("Could not find address for autodetected coordinates.");
+                                detectedLocation = `Lat: ${lat.toFixed(2)}, Lng: ${lng.toFixed(2)}`;
+                            }
+                            locationInput.value = detectedLocation;
+                            locationInput.placeholder = "e.g., New York, NY or California"; // Revert placeholder
+                        } catch (error) {
+                            console.error('Error during reverse geocoding:', error);
+                            locationInput.placeholder = "Enter state or city name (e.g., California)"; // Fallback placeholder
+                        }
+                    },
+                    (error) => {
+                        console.warn(`Geolocation error (${error.code}): ${error.message}`);
+                        locationInput.placeholder = "Enter state or city name (e.g., California)"; // Fallback placeholder
+                        showError("Location detection blocked or failed. Please enter your location manually.");
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                console.warn("Geolocation is not supported by this browser.");
+                locationInput.placeholder = "Enter state or city name (e.g., California)"; // Fallback placeholder
+            }
+        }
 
         /**
          * Handles the main form submission to fetch Panchang data from the backend.
@@ -188,6 +306,7 @@
             panchangDataContainer.innerHTML = '';
             errorMessage.classList.add('hidden');
             loader.style.display = 'flex';
+            suggestionsList.classList.add('hidden'); // Hide suggestions on form submit
 
             const formData = new FormData(panchangForm);
             const startDate = formData.get('startDate');
@@ -206,7 +325,7 @@
 
             try {
                 // NOTE: Ensure your Flask server is running on http://127.0.0.1:5000
-                const apiUrl = `http://127.0.0.1:5000/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
+                const apiUrl = `https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
@@ -221,7 +340,7 @@
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                showError('Failed to connect to the backend server. Please make sure the Python server is running and accessible.');
+                showError('Failed to connect to the backend server or an API error occurred. Please ensure the Python server is running and your GeoNames username is correctly configured in app.py.');
             } finally {
                 loader.style.display = 'none';
             }
@@ -241,6 +360,90 @@
             if (detailRow) {
                 detailRow.classList.toggle('hidden');
                 arrowSpan.classList.toggle('expanded');
+            }
+        }
+
+        /**
+         * Handles input in the location field for suggestions.
+         */
+        function handleLocationInput() {
+            clearTimeout(debounceTimer);
+            const query = locationInput.value.trim();
+
+            if (query.length < 3) { // Only fetch suggestions for queries of 3 or more characters
+                suggestionsList.classList.add('hidden');
+                suggestionsLoader.style.display = 'none';
+                return;
+            }
+
+            suggestionsLoader.style.display = 'inline-block';
+            suggestionsList.innerHTML = ''; // Clear previous suggestions
+            suggestionsList.classList.add('hidden');
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const apiUrl = `http://127.0.0.1:5000/suggest_locations?query=${encodeURIComponent(query)}`;
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.error) {
+                        console.error('Error fetching suggestions:', data.error);
+                        suggestionsList.classList.add('hidden');
+                    } else {
+                        renderSuggestions(data.suggestions);
+                    }
+                } catch (error) {
+                    console.error('Error fetching suggestions:', error);
+                    suggestionsList.classList.add('hidden');
+                } finally {
+                    suggestionsLoader.style.display = 'none';
+                }
+            }, 300); // Debounce to prevent too many requests
+        }
+
+        /**
+         * Renders the fetched location suggestions in the suggestions list.
+         * @param {Array} suggestions - An array of suggestion objects {name: string, geonameId: string}.
+         */
+        function renderSuggestions(suggestions) {
+            suggestionsList.innerHTML = '';
+            if (suggestions && suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.textContent = suggestion.name;
+                    div.dataset.geonameId = suggestion.geonameId; // Store geonameId if needed later
+                    div.dataset.locationName = suggestion.name; // Store full name
+                    suggestionsList.appendChild(div);
+                });
+                suggestionsList.classList.remove('hidden');
+            } else {
+                suggestionsList.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles click on a suggestion item.
+         * @param {Event} e - The click event.
+         */
+        function handleSuggestionClick(e) {
+            const selectedSuggestion = e.target.closest('div');
+            if (selectedSuggestion && selectedSuggestion.dataset.locationName) {
+                locationInput.value = selectedSuggestion.dataset.locationName;
+                suggestionsList.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Hides suggestions list when clicking anywhere else on the document.
+         * @param {Event} e - The click event.
+         */
+        function handleDocumentClick(e) {
+            if (!locationInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+                suggestionsList.classList.add('hidden');
             }
         }
         
