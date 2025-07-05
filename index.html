@@ -3,169 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consolidated Panchang Details</title>
+    <title>Consolidated Panchang & Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter for a clean look, as per theme.txt -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif; /* Body font from theme.txt */
-            /* Applying celestial-gradient from theme.txt */
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #fcd34d, #ef4444, #fef3c7);
-            color: #1f2937; /* Text color from theme.txt card */
-            min-height: 100vh; /* Ensure full height for gradient */
+            color: #1f2937;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem; /* Add some padding around the main content */
+            padding: 1rem;
         }
-        h1, h2, h3 {
-            font-family: 'Inter', sans-serif; /* Headings also Inter, as per theme.txt */
-        }
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
         .loader {
-            border: 4px solid #f3f3f3; /* from theme.txt */
-            border-top: 4px solid #dc2626; /* from theme.txt */
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #dc2626;
             border-radius: 50%;
-            width: 40px; /* from theme.txt */
-            height: 40px; /* from theme.txt */
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
         }
-        @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); }
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Card styling from theme.txt */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .card {
             background-color: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(209, 213, 219, 0.5);
             color: #1f2937;
-            border-radius: 1rem; /* rounded-2xl */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-2xl */
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-
-        /* Custom table styling for better visual appeal */
-        .panchang-table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+        .panchang-table { border-collapse: collapse; width: 100%; table-layout: fixed; }
         .panchang-table th, .panchang-table td {
-            padding: 0.4rem 0.6rem; /* Reduced padding */
-            border-bottom: 1px solid #d1d5db; /* Neutral gray border */
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #d1d5db;
             text-align: left;
-            font-size: 0.875rem; /* text-sm for increased font size */
-            /* white-space: nowrap; /* Removed to allow text wrapping */
+            font-size: 0.825rem; /* Reduced font size */
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+        .panchang-table td sup {
+            font-weight: 600;
+            color: #c2410c;
         }
         .panchang-table th {
-            background-color: #e5e7eb; /* Light gray header background */
+            background-color: #e5e7eb;
             font-weight: 600;
-            color: #4b5563; /* Darker gray text */
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            color: #4b5563;
+            position: sticky; top: 0; z-index: 10;
         }
-        .panchang-table tbody tr:nth-child(odd) {
-            background-color: #ffffff; /* White background for odd rows */
-        }
-        .panchang-table tbody tr:nth-child(even) {
-            background-color: #f9fafb; /* Very light gray for even rows */
-        }
-        .panchang-table tbody tr:hover {
-            background-color: rgba(0, 0, 0, 0.05); /* Hover from theme.txt */
-        }
-        /* Input, Select styling from theme.txt */
+        .panchang-table tbody tr:nth-child(even) { background-color: #f9fafb; }
+        .panchang-table tbody tr.main-row:hover { background-color: rgba(0, 0, 0, 0.05); }
         select, input[type="date"], input[type="text"] {
-            color: #1f2937;
-            background-color: #ffffff;
-            border-color: #d1d5db;
+            color: #1f2937; background-color: #ffffff; border-color: #d1d5db;
         }
-        select option { background-color: #ffffff; color: #1f2937; }
-
-        /* Button styling from theme.txt */
         .btn-primary {
-            background-color: #dc2626; /* Red-600 from theme.txt */
-            color: white;
-            font-weight: bold;
-            padding: 0.75rem 1rem; /* py-3 px-4 */
-            border-radius: 0.5rem; /* rounded-lg */
+            background-color: #dc2626; color: white; font-weight: bold;
+            padding: 0.75rem 1rem; border-radius: 0.5rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        .btn-primary:hover {
-            background-color: #b91c1c; /* Red-700 from theme.txt */
-            transform: scale(1.05); /* hover:scale-105 */
-        }
-
-        /* Styling for the expandable arrow */
-        .expand-arrow {
-            display: inline-block;
-            transition: transform 0.2s ease-in-out;
-        }
-        .expand-arrow.expanded {
-            transform: rotate(90deg);
-        }
+        .btn-primary:hover { background-color: #b91c1c; transform: scale(1.05); }
+        .expand-arrow { display: inline-block; transition: transform 0.2s ease-in-out; }
+        .expand-arrow.expanded { transform: rotate(90deg); }
         .detail-row-content {
-            padding: 1rem;
-            background-color: #f0f4f8; /* Light blue-gray for detail background */
-            border-top: 1px solid #e2e8f0;
-            color: #4a5568;
-            font-size: 0.875rem; /* text-sm */
+            padding: 1rem; background-color: #f0f4f8; border-top: 1px solid #e2e8f0;
+            color: #4a5568; font-size: 0.875rem;
         }
-        .detail-row-content p {
-            margin-bottom: 0.5rem;
-        }
-        .detail-row-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Autocomplete suggestions styling */
+        .detail-row-content p { margin-bottom: 0.5rem; }
+        .detail-row-content p:last-child { margin-bottom: 0; }
         #suggestions-list {
-            position: absolute;
-            z-index: 20;
-            background-color: white;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
-            width: calc(100% - 2rem); /* Adjust to match input width */
-            margin-top: 0.25rem;
+            position: absolute; z-index: 20; background-color: white;
+            border: 1px solid #d1d5db; border-radius: 0.5rem;
+            max-height: 200px; overflow-y: auto;
+            width: calc(100% - 2rem); margin-top: 0.25rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        #suggestions-list div {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        #suggestions-list div:last-child {
-            border-bottom: none;
-        }
-        #suggestions-list div:hover {
-            background-color: #f3f4f6;
-        }
-        #suggestions-loader {
-            display: none;
-            margin-top: 0.5rem;
-            margin-left: 0.5rem;
-        }
+        #suggestions-list div { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #e5e7eb; }
+        #suggestions-list div:last-child { border-bottom: none; }
+        #suggestions-list div:hover { background-color: #f3f4f6; }
+        #suggestions-loader { display: none; margin-top: 0.5rem; margin-left: 0.5rem; }
         .small-loader {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #3498db; /* Blue for suggestion loader */
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
+            border: 2px solid #f3f3f3; border-top: 2px solid #3498db;
+            border-radius: 50%; width: 16px; height: 16px;
             animation: spin 1s linear infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.2; } }
+        .blinker {
+            display: inline-block; width: 10px; height: 10px;
+            border-radius: 50%; animation: blink 1.5s infinite;
+            vertical-align: middle; flex-shrink: 0;
+        }
+        .green-light {
+            background-color: #22c55e;
+            box-shadow: 0 0 6px #22c55e, 0 0 8px #a7f3d0;
+        }
+        .red-light {
+            background-color: #ef4444;
+            box-shadow: 0 0 6px #ef4444, 0 0 8px #fecaca;
         }
     </style>
 </head>
 <body class="min-h-screen">
-
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <!-- Main content card with theme.txt styling -->
-        <div class="w-full max-w-6xl mx-auto card p-6 sm:p-8 md:p-10">
+        <div class="w-full max-w-7xl mx-auto card p-6 sm:p-8 md:p-10">
             <header class="text-center mb-8 md:mb-10">
                 <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-800 mb-2 leading-tight">
                     <span class="mr-3 text-yellow-600 text-4xl">&#x2643;</span> Divine Panchang Insights <span class="ml-3 text-gray-700 text-4xl">&#x2644;</span>
@@ -173,393 +116,416 @@
                 <p class="text-gray-700 text-lg sm:text-xl mt-2">Unveiling daily Vedic wisdom for auspicious beginnings.</p>
             </header>
 
-            <!-- Form Section -->
             <form id="panchangForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end bg-gray-50 p-6 sm:p-8 rounded-xl shadow-inner border border-gray-200">
                 <div>
                     <label for="startDate" class="block text-base font-semibold text-gray-700 mb-1">Start Date</label>
-                    <input type="date" id="startDate" name="startDate" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <input type="date" id="startDate" name="startDate" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" required>
                 </div>
                 <div>
                     <label for="endDate" class="block text-base font-semibold text-gray-700 mb-1">End Date</label>
-                    <input type="date" id="endDate" name="endDate" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+                    <input type="date" id="endDate" name="endDate" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" required>
                 </div>
-                <div class="relative"> <!-- Added relative positioning for suggestions list -->
+                <div class="relative">
                     <label for="location" class="block text-base font-semibold text-gray-700 mb-1">Location</label>
-                    <input type="text" id="location" name="location" placeholder="Detecting location..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required autocomplete="off">
-                    <div id="suggestions-loader" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
-                        <div class="small-loader"></div>
-                    </div>
-                    <div id="suggestions-list" class="hidden"></div> <!-- Suggestions will appear here -->
+                    <input type="text" id="location" name="location" placeholder="Detecting location..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" required autocomplete="off">
+                    <div id="suggestions-loader" class="absolute right-3 top-1/2 -translate-y-1/2 hidden"><div class="small-loader"></div></div>
+                    <div id="suggestions-list" class="hidden"></div>
+                </div>
+                <div>
+                    <label for="birthNakshatra" class="block text-base font-semibold text-gray-700 mb-1">Your Birth Nakshatra</label>
+                    <select id="birthNakshatra" name="birthNakshatra" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" required></select>
+                </div>
+                <div>
+                    <label for="birthMoonSign" class="block text-base font-semibold text-gray-700 mb-1">Your Birth Moon Sign (Rashi)</label>
+                    <select id="birthMoonSign" name="birthMoonSign" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" required></select>
                 </div>
                 <div class="md:col-span-3 text-center mt-4">
                     <button type="submit" class="w-full md:w-auto px-12 py-3 rounded-lg btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                        Get Panchang
+                        Get Panchang & Analysis
                     </button>
                 </div>
             </form>
 
-            <!-- Results Section -->
             <div id="results" class="mt-10">
-                <div id="loader" class="hidden justify-center items-center py-10">
-                    <div class="loader"></div>
-                </div>
+                <div id="loader" class="hidden justify-center items-center py-10"><div class="loader"></div></div>
                 <div id="error-message" class="hidden text-center p-4 bg-red-100 text-red-700 rounded-lg border border-red-300 shadow-sm"></div>
-                <div id="panchang-data" class="mt-6">
-                    <!-- Dynamic consolidated table will be injected here -->
-                </div>
+                <div id="panchang-data-container" class="w-full overflow-x-auto rounded-lg shadow-lg border border-gray-200"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- DOM Elements ---
+        // --- DATA AND CONSTANTS ---
+        const nakshatras = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashirsha", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
+        const rashis = ["Mesh (Aries)", "Vrishabh (Taurus)", "Mithun (Gemini)", "Kark (Cancer)", "Singh (Leo)", "Kanya (Virgo)", "Tula (Libra)", "Vrishchik (Scorpio)", "Dhanu (Sagittarius)", "Makar (Capricorn)", "Kumbh (Aquarius)", "Meen (Pisces)"];
+        
+        const rashiMapping = {
+            "Mesha": "Mesh (Aries)", "Mesh": "Mesh (Aries)",
+            "Vrishabha": "Vrishabh (Taurus)", "Vrishabh": "Vrishabh (Taurus)",
+            "Mithuna": "Mithun (Gemini)", "Mithun": "Mithun (Gemini)",
+            "Karka": "Kark (Cancer)", "Kark": "Kark (Cancer)",
+            "Simha": "Singh (Leo)", "Singh": "Singh (Leo)",
+            "Kanya": "Kanya (Virgo)",
+            "Tula": "Tula (Libra)",
+            "Vrishchika": "Vrishchik (Scorpio)", "Vrishchik": "Vrishchik (Scorpio)",
+            "Dhanu": "Dhanu (Sagittarius)", "Dhanus": "Dhanu (Sagittarius)",
+            "Makar": "Makar (Capricorn)", "Makara": "Makar (Capricorn)",
+            "Kumbha": "Kumbh (Aquarius)", "Kumbh": "Kumbh (Aquarius)",
+            "Meena": "Meen (Pisces)", "Meen": "Meen (Pisces)"
+        };
+
+        const taraBalaDescriptions = {
+            1: { type: 'Janma (Very Good)', significance: 'Good time to start any important work' },
+            2: { type: 'Sampat (Wealth, Consistency)', significance: 'Good time to start something related to Money' },
+            3: { type: 'Vipat (Danger)', significance: 'No travel. No Risk' },
+            4: { type: 'Kshema (Well Being)', significance: 'Good Time To Start Health related activities' },
+            5: { type: 'Pratyaari (Obstacle)', significance: 'Avoid anything New thing. Avoid Taking Risks' },
+            6: { type: 'Sadhana (Achievement)', significance: 'Good Time To Start Meditation, Sadhana, Spiritual' },
+            7: { type: 'Naidhana (Death)', significance: "Don't start any new work. Don't Take Risk" },
+            8: { type: 'Mitra (Friend)', significance: 'Good To start new thing.' },
+            9: { type: 'Param Mitra (Very Good)', significance: 'Good To start new thing.' }
+        };
+
+        const goodTaraBalaGroups = [1, 2, 4, 6, 8, 9];
+        const badRashiCounts = [4, 8, 12];
+
+        // --- SCORING DATA FROM IMAGES ---
+        const tithiScores = { "Pratipada": 1, "Dwitiya": 1, "Tritiya": 1, "Chaturthi": 0, "Panchami": 1, "Shashthi": 0, "Saptami": 1, "Ashtami": 0, "Navami": 0, "Dashami": 1, "Ekadashi": 1, "Dwadashi": 0, "Trayodashi": 1, "Chaturdashi": 0, "Purnima": 1, "Amavasya": 0 };
+        const nakshatraScores = { "Ashwini": 4, "Bharani": 0, "Krittika": 0, "Rohini": 4, "Mrigashirsha": 4, "Ardra": 0, "Punarvasu": 4, "Pushya": 4, "Ashlesha": 0, "Magha": 0, "Purva Phalguni": 0, "Uttara Phalguni": 4, "Hasta": 4, "Chitra": 4, "Swati": 4, "Vishakha": 0, "Anuradha": 4, "Jyeshtha": 0, "Mula": 4, "Purva Ashadha": 0, "Uttara Ashadha": 4, "Shravana": 4, "Dhanishta": 4, "Shatabhisha": 4, "Purva Bhadrapada": 4, "Uttara Bhadrapada": 4, "Revati": 4 };
+        const dayScores = { "Sunday": 8, "Monday": 8, "Tuesday": 0, "Wednesday": 8, "Thursday": 8, "Friday": 8, "Saturday": 0 };
+        const karanaScores = { "Bava": 16, "Balava": 16, "Kaulava": 0, "Taitila": 16, "Garaja": 16, "Vanija": 16, "Vishti": 0, "Shakuni": 0, "Chatushpada": 0, "Naga": 0, "Kinstughna": 0 };
+        const yogaScores = { "Vaidhriti": 0, "Vishkambha": 0, "Priti": 32, "Ayushmana": 32, "Saubhagya": 32, "Shobhana": 32, "Atiganda": 0, "Sukarma": 32, "Dhriti": 32, "Shula": 0, "Ganda": 0, "Vriddhi": 32, "Dhruva": 32, "Vyaghata": 0, "Harshana": 32, "Vajra": 0, "Siddhi": 32, "Vyatipata": 0, "Variyana": 32, "Parigha": 0, "Shiva": 32, "Siddha": 32, "Sadhya": 32, "Shubha": 32, "Shukla": 32, "Brahma": 32, "Indra": 32 };
+
+        // --- UI ELEMENT REFERENCES ---
         const panchangForm = document.getElementById('panchangForm');
         const loader = document.getElementById('loader');
         const errorMessage = document.getElementById('error-message');
-        const panchangDataContainer = document.getElementById('panchang-data');
+        const panchangDataContainer = document.getElementById('panchang-data-container');
         const locationInput = document.getElementById('location');
         const suggestionsList = document.getElementById('suggestions-list');
         const suggestionsLoader = document.getElementById('suggestions-loader');
-
-        // --- Global Variables ---
+        const birthNakshatraSelect = document.getElementById('birthNakshatra');
+        const birthMoonSignSelect = document.getElementById('birthMoonSign');
         let debounceTimer;
 
         // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', initializePage);
         panchangForm.addEventListener('submit', handleFormSubmit);
         panchangDataContainer.addEventListener('click', handleExpandClick);
         locationInput.addEventListener('input', handleLocationInput);
         suggestionsList.addEventListener('click', handleSuggestionClick);
-        document.addEventListener('click', handleDocumentClick); // To hide suggestions when clicking outside
-        document.addEventListener('DOMContentLoaded', initializeLocation); // Autodetect location on load
+        document.addEventListener('click', (e) => {
+            if (!locationInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+                suggestionsList.classList.add('hidden');
+            }
+        });
 
-        /**
-         * Initializes location detection on page load.
-         */
+        function initializePage() {
+            populateDropdowns();
+            initializeLocation();
+            const today = new Date();
+            const fiveDaysLater = new Date();
+            fiveDaysLater.setDate(today.getDate() + 4);
+            document.getElementById('startDate').value = today.toISOString().split('T')[0];
+            document.getElementById('endDate').value = fiveDaysLater.toISOString().split('T')[0];
+        }
+
+        function populateDropdowns() {
+            nakshatras.forEach(n => birthNakshatraSelect.add(new Option(n, n)));
+            rashis.forEach(r => birthMoonSignSelect.add(new Option(r, r)));
+        }
+
         function initializeLocation() {
+            const geonamesUser = "ajayaggarwal";
             if (navigator.geolocation) {
                 locationInput.placeholder = "Detecting location...";
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        console.log(`Geolocation successful: Lat ${lat}, Lng ${lng}`);
+                        const { latitude: lat, longitude: lng } = position.coords;
                         try {
-                            // Use GeoNames reverse geocoding API to get city/state from coordinates
-                            // NOTE: This assumes your backend has a /reverse_geocode endpoint or similar
-                            // For now, we'll use the /suggest_locations endpoint with a query based on coordinates
-                            // A more robust solution would be a dedicated reverse geocoding endpoint in app.py
-                            const reverseGeocodeUrl = `http://api.geonames.org/findNearestAddressJSON?lat=${lat}&lng=${lng}&username=YOUR_GEONAMES_USERNAME`; // Replace with your username
-                            const response = await fetch(reverseGeocodeUrl);
-                            const data = await response.json();
-
-                            let detectedLocation = "Unknown Location";
-                            if (data && data.address && data.address.street) {
-                                // GeoNames findNearestAddressJSON returns street and postal code, not always city/state directly
-                                // A better endpoint for city/state would be findNearestPlaceNameJSON
-                                const placeNameUrl = `http://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=YOUR_GEONAMES_USERNAME`; // Replace with your username
-                                const placeResponse = await fetch(placeNameUrl);
-                                const placeData = await placeResponse.json();
-
-                                if (placeData && placeData.geonames && placeData.geonames.length > 0) {
-                                    const place = placeData.geonames[0];
-                                    detectedLocation = place.name;
-                                    if (place.adminName1 && place.adminName1.toLowerCase() !== place.name.toLowerCase()) {
-                                        detectedLocation += `, ${place.adminName1}`;
-                                    }
-                                    if (place.countryName && place.countryName.toLowerCase() !== place.name.toLowerCase() && place.countryName.toLowerCase() !== place.adminName1.toLowerCase()) {
-                                        detectedLocation += `, ${place.countryName}`;
-                                    }
-                                } else {
-                                    console.warn("Could not find nearest place name for autodetected coordinates.");
-                                    // Fallback to a more generic display if place name not found
-                                    detectedLocation = `Lat: ${lat.toFixed(2)}, Lng: ${lng.toFixed(2)}`;
-                                }
+                            const placeNameUrl = `https://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=${geonamesUser}`;
+                            const placeResponse = await fetch(placeNameUrl);
+                            const placeData = await placeResponse.json();
+                            if (placeData.geonames && placeData.geonames.length > 0) {
+                                const place = placeData.geonames[0];
+                                locationInput.value = `${place.name}, ${place.adminName1}, ${place.countryName}`;
                             } else {
-                                console.warn("Could not find address for autodetected coordinates.");
-                                detectedLocation = `Lat: ${lat.toFixed(2)}, Lng: ${lng.toFixed(2)}`;
+                                locationInput.value = `Lat: ${lat.toFixed(2)}, Lng: ${lng.toFixed(2)}`;
                             }
-                            locationInput.value = detectedLocation;
-                            locationInput.placeholder = "e.g., New York, NY or California"; // Revert placeholder
                         } catch (error) {
                             console.error('Error during reverse geocoding:', error);
-                            locationInput.placeholder = "Enter state or city name (e.g., California)"; // Fallback placeholder
+                            locationInput.placeholder = "Enter state or city name";
                         }
                     },
                     (error) => {
-                        console.warn(`Geolocation error (${error.code}): ${error.message}`);
-                        locationInput.placeholder = "Enter state or city name (e.g., California)"; // Fallback placeholder
-                        showError("Location detection blocked or failed. Please enter your location manually.");
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                        console.warn(`Geolocation error: ${error.message}`);
+                        locationInput.placeholder = "Enter state or city name";
+                    }
                 );
             } else {
-                console.warn("Geolocation is not supported by this browser.");
-                locationInput.placeholder = "Enter state or city name (e.g., California)"; // Fallback placeholder
+                locationInput.placeholder = "Enter state or city name";
             }
         }
 
-        /**
-         * Handles the main form submission to fetch Panchang data from the backend.
-         */
         async function handleFormSubmit(e) {
             e.preventDefault();
             panchangDataContainer.innerHTML = '';
             errorMessage.classList.add('hidden');
             loader.style.display = 'flex';
-            suggestionsList.classList.add('hidden'); // Hide suggestions on form submit
+            suggestionsList.classList.add('hidden');
 
             const formData = new FormData(panchangForm);
             const startDate = formData.get('startDate');
             const endDate = formData.get('endDate');
             const location = formData.get('location');
-            
-            if (!startDate || !endDate || !location) {
-                showError("Please fill in all fields: Start Date, End Date, and Location.");
-                return;
-            }
+            const birthNakshatra = formData.get('birthNakshatra');
+            const birthMoonSign = formData.get('birthMoonSign');
 
+            if (!startDate || !endDate || !location || !birthNakshatra || !birthMoonSign) {
+                return showError("Please fill in all fields.");
+            }
             if (new Date(startDate) > new Date(endDate)) {
-                showError("Start date cannot be after end date.");
-                return;
+                return showError("Start date cannot be after end date.");
             }
 
             try {
-                // NOTE: Ensure your Flask server is running on http://127.0.0.1:5000
                 const apiUrl = `https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 if (data.error) {
                     showError(data.error);
                 } else {
-                    displayPanchangData(data.panchang);
+                    renderPanchangTable(data.panchang, birthNakshatra, birthMoonSign);
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                showError('Failed to connect to the backend server or an API error occurred. Please ensure the Python server is running and your GeoNames username is correctly configured in app.py.');
+                showError('Failed to connect to the backend server. Please ensure the Python server is running.');
             } finally {
                 loader.style.display = 'none';
             }
         }
 
-        /**
-         * Handles clicks on the expand/collapse arrow buttons.
-         */
         function handleExpandClick(e) {
             const button = e.target.closest('.expand-btn');
             if (!button) return;
-
-            const date = button.dataset.date;
-            const detailRow = document.getElementById(`details-${date}`);
-            const arrowSpan = button.querySelector('.expand-arrow');
-
+            const detailRow = document.getElementById(`details-${button.dataset.date}`);
             if (detailRow) {
                 detailRow.classList.toggle('hidden');
-                arrowSpan.classList.toggle('expanded');
+                button.querySelector('.expand-arrow').classList.toggle('expanded');
             }
         }
 
-        /**
-         * Handles input in the location field for suggestions.
-         */
         function handleLocationInput() {
             clearTimeout(debounceTimer);
             const query = locationInput.value.trim();
-
-            if (query.length < 3) { // Only fetch suggestions for queries of 3 or more characters
+            if (query.length < 3) {
                 suggestionsList.classList.add('hidden');
                 suggestionsLoader.style.display = 'none';
                 return;
             }
-
             suggestionsLoader.style.display = 'inline-block';
-            suggestionsList.innerHTML = ''; // Clear previous suggestions
-            suggestionsList.classList.add('hidden');
-
             debounceTimer = setTimeout(async () => {
                 try {
-                    const apiUrl = `http://127.0.0.1:5000/suggest_locations?query=${encodeURIComponent(query)}`;
-                    const response = await fetch(apiUrl);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
+                    const response = await fetch(`http://127.0.0.1:5000/suggest_locations?query=${encodeURIComponent(query)}`);
                     const data = await response.json();
-                    if (data.error) {
-                        console.error('Error fetching suggestions:', data.error);
-                        suggestionsList.classList.add('hidden');
+                    if (data.suggestions && data.suggestions.length > 0) {
+                        suggestionsList.innerHTML = data.suggestions.map(s => `<div data-location-name="${s.name}">${s.name}</div>`).join('');
+                        suggestionsList.classList.remove('hidden');
                     } else {
-                        renderSuggestions(data.suggestions);
+                        suggestionsList.classList.add('hidden');
                     }
                 } catch (error) {
                     console.error('Error fetching suggestions:', error);
-                    suggestionsList.classList.add('hidden');
                 } finally {
                     suggestionsLoader.style.display = 'none';
                 }
-            }, 300); // Debounce to prevent too many requests
+            }, 300);
         }
 
-        /**
-         * Renders the fetched location suggestions in the suggestions list.
-         * @param {Array} suggestions - An array of suggestion objects {name: string, geonameId: string}.
-         */
-        function renderSuggestions(suggestions) {
-            suggestionsList.innerHTML = '';
-            if (suggestions && suggestions.length > 0) {
-                suggestions.forEach(suggestion => {
-                    const div = document.createElement('div');
-                    div.textContent = suggestion.name;
-                    div.dataset.geonameId = suggestion.geonameId; // Store geonameId if needed later
-                    div.dataset.locationName = suggestion.name; // Store full name
-                    suggestionsList.appendChild(div);
-                });
-                suggestionsList.classList.remove('hidden');
-            } else {
-                suggestionsList.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Handles click on a suggestion item.
-         * @param {Event} e - The click event.
-         */
         function handleSuggestionClick(e) {
-            const selectedSuggestion = e.target.closest('div');
-            if (selectedSuggestion && selectedSuggestion.dataset.locationName) {
-                locationInput.value = selectedSuggestion.dataset.locationName;
-                suggestionsList.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Hides suggestions list when clicking anywhere else on the document.
-         * @param {Event} e - The click event.
-         */
-        function handleDocumentClick(e) {
-            if (!locationInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+            if (e.target.dataset.locationName) {
+                locationInput.value = e.target.dataset.locationName;
                 suggestionsList.classList.add('hidden');
             }
         }
         
-        /**
-         * Displays the fetched panchang data on the page in a single consolidated tabular format.
-         */
-        function displayPanchangData(panchangList) {
+        function formatCellWithTime(value, score) {
+            if (!value) return 'N/A';
+            const parts = value.split(' upto ');
+            const name = parts[0].trim();
+            let timeInfo = '';
+            if (parts.length > 1) {
+                timeInfo = `<span class="text-xs text-gray-500"> upto ${parts[1].trim()}</span>`;
+            }
+            return `${name}<sup>${score}</sup>${timeInfo}`;
+        }
+
+        function renderPanchangTable(panchangList, birthNakshatra, birthMoonSign) {
             if (!panchangList || panchangList.length === 0) {
-                panchangDataContainer.innerHTML = `<p class="text-center text-gray-500 py-8">No data found for the selected dates.</p>`;
+                panchangDataContainer.innerHTML = `<p class="text-center text-gray-500 py-8">No Panchang data found.</p>`;
                 return;
             }
 
-            // Define the order of columns for the main visible row
-            const mainColumns = [
-                { key: 'date', name: 'Date', class: 'w-[10%]' }, 
-                { key: 'weekday', name: 'Day', class: 'w-[7%]' }, /* Reduced width for weekday */
-                { key: 'tithi', name: 'Tithi', class: 'w-[12%]' },
-                { key: 'paksha', name: 'Paksha', class: 'w-[10%]' },
-                { key: 'yoga', name: 'Yoga', class: 'w-[12%]' },
-                { key: 'karana', name: 'Karana', class: 'w-[12%]' },
-                { key: 'moonsign', name: 'Moonsign', class: 'w-[10%]' },
-                { key: 'nakshatra', name: 'Nakshatra', class: 'w-[12%]' },
-                { key: 'rahu_kalam', name: 'Rahu Kaal', class: 'text-red-600 font-semibold w-[12%]' }, 
-                { key: 'abhijit_muhurta', name: 'Abhijit Muhurta', class: 'w-[12%]' }
-            ];
+            const birthNakshatraIndex = nakshatras.indexOf(birthNakshatra);
+            const birthRashiIndex = rashis.indexOf(birthMoonSign);
 
-            // Define the columns for the expandable detail row
+            const tableHeaders = `
+                <th style="width: 8%;">Date</th><th style="width: 8%;">Paksha</th>
+                <th style="width: 7%;">Day</th><th style="width: 10%;">Tithi</th>
+                <th style="width: 10%;">Yoga</th><th style="width: 10%;">Karana</th>
+                <th style="width: 11%;">Nakshatra</th><th style="width: 10%;">Moonsign</th>
+                <th style="width: 12%;">Panchang Score</th>
+                <th style="width: 12%;">Chandrabal and Tarabal</th><th style="width: 2%;"></th>
+            `;
+
             const detailColumns = [
-                { key: 'sunrise', name: 'Sunrise' },
-                { key: 'sunset', name: 'Sunset' },
-                { key: 'brahma_muhurta', name: 'Brahma Muhurta' },
-                { key: 'amrit_kalam', name: 'Amrit Kaal' }
+                { key: 'sunrise', name: 'Sunrise' }, { key: 'sunset', name: 'Sunset' },
+                { key: 'rahu_kalam', name: 'Rahu Kaal' }, { key: 'abhijit_muhurta', name: 'Abhijit Muhurta' },
+                { key: 'brahma_muhurta', name: 'Brahma Muhurta' }, { key: 'amrit_kalam', name: 'Amrit Kaal' }
             ];
+            const formatValue = (value) => Array.isArray(value) ? value.join('<br>') : (value || 'N/A');
 
-            // Generate table headers for the main columns + Details column
-            const tableHeaders = mainColumns.map(col => `<th class="px-4 py-2 ${col.class || ''}">${col.name}</th>`).join('') + 
-                                 `<th class="px-4 py-2 w-[5%]"></th>`; // Header for the expand button, fixed width, no text
-
-            // Helper to format values (handles arrays by joining with <br>)
-            const formatValue = (value) => {
-                if (Array.isArray(value)) {
-                    return value.join('<br>'); 
-                }
-                return value || 'N/A';
-            };
-
-            // Generate table rows for each day
             const allTableRows = panchangList.map(item => {
                 if (item.error) {
-                    // If a day has an error, display it as a single row spanning all columns
-                    return `
-                        <tr class="bg-red-50 text-red-700">
-                            <td colspan="${mainColumns.length + 1}" class="px-4 py-2 text-center font-semibold">
-                                ${new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}: ${item.error}
-                            </td>
-                        </tr>
-                    `;
+                    return `<tr class="bg-red-50 text-red-700"><td colspan="11" class="px-4 py-2 text-center font-semibold">${new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}: ${item.error}</td></tr>`;
                 }
 
-                // Main row content
-                const mainRowCells = mainColumns.map(col => {
-                    const value = item[col.key];
-                    const cellClass = col.class ? col.class : ''; // Apply specific class if defined
-                    return `<td class="px-4 py-2 ${cellClass}">${formatValue(value)}</td>`;
-                }).join('');
+                // --- Analysis Logic (Tara Bala & Chandra Bala)---
+                const transitNakshatraName = (item.nakshatra || '').split(' upto ')[0].trim();
+                const transitNakshatraIndex = nakshatras.indexOf(transitNakshatraName);
+                let nakshatraCount = transitNakshatraIndex - birthNakshatraIndex;
+                if (nakshatraCount < 0) nakshatraCount += 27;
+                const taraBalaGroup = ((nakshatraCount) % 9) + 1;
+                const isNakshatraGood = goodTaraBalaGroups.includes(taraBalaGroup) && transitNakshatraIndex !== -1;
 
-                // Expand button cell
-                const expandButtonCell = `
-                    <td class="px-4 py-2 text-center w-[5%]">
-                        <button class="expand-btn text-gray-600 hover:text-gray-900 focus:outline-none" data-date="${item.date}">
-                            <span class="expand-arrow">&#9658;</span>
-                        </button>
-                    </td>
+                const transitMoonSignCleaned = (item.moonsign || '').split(' upto ')[0].trim();
+                const transitMoonSign = rashiMapping[transitMoonSignCleaned] || transitMoonSignCleaned;
+                const transitRashiIndex = rashis.indexOf(transitMoonSign);
+                let rashiCount = transitRashiIndex - birthRashiIndex;
+                if (rashiCount < 0) rashiCount += 12;
+                rashiCount = (rashiCount % 12) + 1;
+                const isRashiGood = !badRashiCounts.includes(rashiCount) && transitRashiIndex !== -1;
+                
+                const isOverallGood = isNakshatraGood && isRashiGood;
+
+                // --- Scoring Logic ---
+                const tithiName = (item.tithi || '').split(' upto ')[0].trim();
+                const tithiScore = tithiScores[tithiName] || 0;
+                const nakshatraScore = nakshatraScores[transitNakshatraName] || 0;
+                const dayName = item.weekday;
+                const dayScore = dayScores[dayName] || 0;
+                const karanaName = (item.karana || '').split(' upto ')[0].trim();
+                const karanaScore = karanaScores[karanaName] || 0;
+                const yogaName = (item.yoga || '').split(' upto ')[0].trim();
+                const yogaScore = yogaScores[yogaName] || 0;
+                
+                const panchangScore = tithiScore + nakshatraScore + dayScore + karanaScore + yogaScore;
+                
+                let scoreCategory = '';
+                let scoreCategoryClass = 'text-gray-600';
+                if (panchangScore === 61) {
+                    scoreCategory = 'Very Good Panchang Score - Check Either ChandraBala or TaraBala Available';
+                    scoreCategoryClass = 'text-blue-700 font-bold';
+                } else if (panchangScore > 40) {
+                    scoreCategory = 'Good - Please Check Chandra Bal & Tarabala Before Moving Forward';
+                    scoreCategoryClass = 'text-green-600 font-semibold';
+                } else if (panchangScore > 24) {
+                    scoreCategory = 'Fair - Please Ensure Chandra Bal & Tarabala Before Moving Forward';
+                    scoreCategoryClass = 'text-yellow-600';
+                } else {
+                    scoreCategory = 'Not Recommended Due To Low Score';
+                    scoreCategoryClass = 'text-red-700 font-semibold';
+                }
+
+                // --- Cell Content Generation ---
+                const pakshaName = item.paksha || "N/A";
+                const pakshaClass = pakshaName === 'Shukla Paksha' ? 'text-green-700 font-semibold' : '';
+
+                const rawMoonsign = item.moonsign || '';
+                const moonsignParts = rawMoonsign.split(' upto ');
+                const moonsignNamePart = moonsignParts[0].trim();
+                const mappedMoonsignName = rashiMapping[moonsignNamePart] || moonsignNamePart;
+                let moonsignTimeInfo = '';
+                if (moonsignParts.length > 1) {
+                   moonsignTimeInfo = `<br><span class="text-xs text-gray-500">upto ${moonsignParts[1].trim()}</span>`;
+                }
+                const moonsignCell = `<div class="flex items-center justify-between"><span>${mappedMoonsignName}${moonsignTimeInfo}</span><span class="blinker ${isRashiGood ? 'green-light' : 'red-light'}"></span></div>`;
+                
+                let nakshatraTimeInfo = '';
+                const nakshatraParts = (item.nakshatra || '').split(' upto ');
+                if (nakshatraParts.length > 1) {
+                    nakshatraTimeInfo = `<span class="text-xs text-gray-500"> upto ${nakshatraParts[1].trim()}</span>`;
+                }
+                const nakshatraCell = `<div class="flex items-center justify-between"><span>${transitNakshatraName}<sup>${nakshatraScore}</sup>${nakshatraTimeInfo}</span><span class="blinker ${isNakshatraGood ? 'green-light' : 'red-light'}"></span></div>`;
+
+                // --- Chandrabal and Tarabal cell content ---
+                const taraInfo = taraBalaDescriptions[taraBalaGroup] || {type: 'Unknown', significance: ''};
+                const verdict = isOverallGood ? 'Auspicious' : 'Inauspicious';
+                const verdictClass = isOverallGood ? 'text-green-600' : 'text-red-600';
+
+                let finalResultContent;
+                if(isOverallGood) {
+                    finalResultContent = `
+                        <div>
+                            <div class="font-bold ${verdictClass}">${verdict}</div>
+                            <div class="text-xs text-gray-600 font-semibold">${taraInfo.type}</div>
+                            <div class="text-xs text-gray-500">${taraInfo.significance}</div>
+                        </div>`;
+                } else {
+                    const badReasons = [];
+                    if (!isNakshatraGood) { badReasons.push(taraInfo.type); }
+                    if (!isRashiGood) {
+                        badReasons.push(transitRashiIndex === -1 ? 'Unknown Moon' : `${rashiCount}th Moon`);
+                    }
+                    finalResultContent = `
+                        <div>
+                            <div class="font-bold ${verdictClass}">${verdict}</div>
+                            <div class="text-xs text-red-500">(${badReasons.join(', ')})</div>
+                        </div>`;
+                }
+                
+                const panchangScoreContent = `
+                    <div>
+                        <div class="font-bold text-lg text-gray-800">${panchangScore}</div>
+                        <div class="text-xs ${scoreCategoryClass}" style="white-space: normal;">${scoreCategory}</div>
+                    </div>
                 `;
 
-                // Detail row content
-                const detailRowContent = detailColumns.map(col => 
-                    `<p class="text-sm"><strong>${col.name}:</strong> ${formatValue(item[col.key])}</p>`
-                ).join('');
+                const mainRowCells = `
+                    <td>${item.date}</td>
+                    <td class="${pakshaClass}">${pakshaName}</td>
+                    <td>${dayName}<sup>${dayScore}</sup></td>
+                    <td>${formatCellWithTime(item.tithi, tithiScore)}</td>
+                    <td>${formatCellWithTime(item.yoga, yogaScore)}</td>
+                    <td>${formatCellWithTime(item.karana, karanaScore)}</td>
+                    <td>${nakshatraCell}</td>
+                    <td>${moonsignCell}</td>
+                    <td class="text-center">${panchangScoreContent}</td>
+                    <td>${finalResultContent}</td>
+                `;
+                const expandButtonCell = `<td class="text-center"><button class="expand-btn text-gray-600 hover:text-gray-900 focus:outline-none" data-date="${item.date}"><span class="expand-arrow">&#9658;</span></button></td>`;
+                const detailRowContent = detailColumns.map(col => {
+                    let value = formatValue(item[col.key]);
+                    let classes = "inline-block mr-6";
+                    if (col.key === 'rahu_kalam') {
+                        classes += " text-red-700 font-semibold";
+                    }
+                     if (col.key === 'abhijit_muhurta') {
+                        classes += " text-green-700 font-semibold";
+                    }
+                    return `<p class="${classes}"><strong>${col.name}:</strong> ${value}</p>`
+                }).join('');
 
                 return `
-                    <tr class="main-row">
-                        ${mainRowCells}
-                        ${expandButtonCell}
-                    </tr>
-                    <tr id="details-${item.date}" class="detail-row hidden">
-                        <td colspan="${mainColumns.length + 1}">
-                            <div class="detail-row-content">
-                                ${detailRowContent}
-                            </div>
-                        </td>
-                    </tr>
+                    <tr class="main-row">${mainRowCells}${expandButtonCell}</tr>
+                    <tr id="details-${item.date}" class="detail-row hidden"><td colspan="11"><div class="detail-row-content">${detailRowContent}</div></td></tr>
                 `;
             }).join('');
 
-            // Assemble the complete table HTML
-            const tableHtml = `
-                <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-200">
-                    <table class="min-w-full panchang-table">
-                        <thead>
-                            <tr>
-                                ${tableHeaders}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${allTableRows}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            panchangDataContainer.innerHTML = tableHtml;
+            panchangDataContainer.innerHTML = `<table class="min-w-full panchang-table"><thead><tr>${tableHeaders}</tr></thead><tbody>${allTableRows}</tbody></table>`;
         }
 
-        /**
-         * Displays an error message in the UI.
-         */
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.classList.remove('hidden');
