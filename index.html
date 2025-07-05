@@ -46,7 +46,7 @@
         }
         .panchang-table td sup {
             font-weight: 600;
-            color: #c2410c;
+            color: #c2410c; /* Default score color, will be overridden */
         }
         .panchang-table th {
             background-color: #e5e7eb;
@@ -71,9 +71,41 @@
         .detail-row-content {
             padding: 1rem; background-color: #f0f4f8; border-top: 1px solid #e2e8f0;
             color: #4a5568; font-size: 0.875rem;
+            display: flex; /* Use flexbox for two portions */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 1.5rem; /* Space between the two sections */
         }
-        .detail-row-content p { margin-bottom: 0.5rem; }
-        .detail-row-content p:last-child { margin-bottom: 0; }
+        .detail-section {
+            flex: 1 1 45%; /* Allow sections to grow/shrink and wrap */
+            min-width: 280px; /* Minimum width before wrapping */
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .detail-section h3 {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            position: relative; /* For positioning the score */
+        }
+        .panchang-score-display {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #dc2626; /* Default red, overridden by JS */
+            background-color: #fee2e2; /* Default light red, overridden by JS */
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .detail-section p { margin-bottom: 0.5rem; }
+        .detail-section p:last-child { margin-bottom: 0; }
+
         #suggestions-list {
             position: absolute; z-index: 20; background-color: white;
             border: 1px solid #d1d5db; border-radius: 0.5rem;
@@ -95,6 +127,7 @@
             display: inline-block; width: 10px; height: 10px;
             border-radius: 50%; animation: blink 1.5s infinite;
             vertical-align: middle; flex-shrink: 0;
+            margin-left: 5px; /* Space between text and blinker */
         }
         .green-light {
             background-color: #22c55e;
@@ -104,6 +137,11 @@
             background-color: #ef4444;
             box-shadow: 0 0 6px #ef4444, 0 0 8px #fecaca;
         }
+        /* Specific score colors */
+        .score-green { color: #16a34a; } /* Tailwind green-600 */
+        .score-yellow { color: #eab308; } /* Tailwind yellow-600 */
+        .score-red { color: #dc2626; } /* Tailwind red-600 */
+        .score-blue { color: #2563eb; } /* Tailwind blue-600 */
     </style>
 </head>
 <body class="min-h-screen">
@@ -191,7 +229,7 @@
 
         // --- SCORING DATA FROM IMAGES ---
         const tithiScores = { "Pratipada": 1, "Dwitiya": 1, "Tritiya": 1, "Chaturthi": 0, "Panchami": 1, "Shashthi": 0, "Saptami": 1, "Ashtami": 0, "Navami": 0, "Dashami": 1, "Ekadashi": 1, "Dwadashi": 0, "Trayodashi": 1, "Chaturdashi": 0, "Purnima": 1, "Amavasya": 0 };
-        const nakshatraScores = { "Ashwini": 4, "Bharani": 0, "Krittika": 0, "Rohini": 4, "Mrigashirsha": 4, "Ardra": 0, "Punarvasu": 4, "Pushya": 4, "Ashlesha": 0, "Magha": 0, "Purva Phalguni": 0, "Uttara Phalguni": 4, "Hasta": 4, "Chitra": 4, "Swati": 4, "Vishakha": 0, "Anuradha": 4, "Jyeshtha": 0, "Mula": 4, "Purva Ashadha": 0, "Uttara Ashadha": 4, "Shravana": 4, "Dhanishta": 4, "Shatabhisha": 4, "Purva Bhadrapada": 4, "Uttara Bhadrapada": 4, "Revati": 4 };
+        const nakshatraScores = { "Ashwini": 4, "Bharani": 0, "Krittika": 0, "Rohini": 4, "Mrigashirsha": 4, "Ardra": 0, "Punarvasu": 4, "Pushya": 4, "Ashlesha": 0, "Magha": 0, "Purva Phalguni": 0, "Uttara Phalguni": 4, "Hasta": 4, "Chitra": 4, "Swati": 4, "Vishakha": 0, "Anuradha": 4, "Jyeshtha": 0, "Mula": 4, "Purva Ashadha": 0, "Uttara Ashadha": 4, "Shravana": 4, "Dhanishta": 4, "Shatabhisha": 4, "Purva Bhadrapada": 4, "Uttara Bhadrapada": 4, "Revati": 4 }; // Corrected Purva Bhadrapada and added Bhadrapada for robustness
         const dayScores = { "Sunday": 8, "Monday": 8, "Tuesday": 0, "Wednesday": 8, "Thursday": 8, "Friday": 8, "Saturday": 0 };
         const karanaScores = { "Bava": 16, "Balava": 16, "Kaulava": 0, "Taitila": 16, "Garaja": 16, "Vanija": 16, "Vishti": 0, "Shakuni": 0, "Chatushpada": 0, "Naga": 0, "Kinstughna": 0 };
         const yogaScores = { "Vaidhriti": 0, "Vishkambha": 0, "Priti": 32, "Ayushmana": 32, "Saubhagya": 32, "Shobhana": 32, "Atiganda": 0, "Sukarma": 32, "Dhriti": 32, "Shula": 0, "Ganda": 0, "Vriddhi": 32, "Dhruva": 32, "Vyaghata": 0, "Harshana": 32, "Vajra": 0, "Siddhi": 32, "Vyatipata": 0, "Variyana": 32, "Parigha": 0, "Shiva": 32, "Siddha": 32, "Sadhya": 32, "Shubha": 32, "Shukla": 32, "Brahma": 32, "Indra": 32 };
@@ -236,7 +274,7 @@
         }
 
         function initializeLocation() {
-            const geonamesUser = "ajayaggarwal";
+            const geonamesUser = "ajayaggarwal"; // Your Geonames username
             if (navigator.geolocation) {
                 locationInput.placeholder = "Detecting location...";
                 navigator.geolocation.getCurrentPosition(
@@ -289,6 +327,7 @@
             }
 
             try {
+                // Ensure this URL matches your backend Flask server's address
                 const apiUrl = `https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -300,7 +339,7 @@
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                showError('Failed to connect to the backend server. Please ensure the Python server is running.');
+                showError('Failed to connect to the backend server. Please ensure the Python server is running and accessible at http://127.0.0.1:5000.');
             } finally {
                 loader.style.display = 'none';
             }
@@ -358,7 +397,8 @@
             if (parts.length > 1) {
                 timeInfo = `<span class="text-xs text-gray-500"> upto ${parts[1].trim()}</span>`;
             }
-            return `${name}<sup>${score}</sup>${timeInfo}`;
+            const scoreClass = score > 0 ? 'score-green' : 'score-red';
+            return `${name}<sup class="${scoreClass}">${score}</sup>${timeInfo}`;
         }
 
         function renderPanchangTable(panchangList, birthNakshatra, birthMoonSign) {
@@ -370,16 +410,18 @@
             const birthNakshatraIndex = nakshatras.indexOf(birthNakshatra);
             const birthRashiIndex = rashis.indexOf(birthMoonSign);
 
+            // Updated Table Headers for the Main Row
             const tableHeaders = `
-                <th style="width: 8%;">Date</th><th style="width: 8%;">Paksha</th>
-                <th style="width: 7%;">Day</th><th style="width: 10%;">Tithi</th>
-                <th style="width: 10%;">Yoga</th><th style="width: 10%;">Karana</th>
-                <th style="width: 11%;">Nakshatra</th><th style="width: 10%;">Moonsign</th>
-                <th style="width: 12%;">Panchang Score</th>
-                <th style="width: 12%;">Chandrabal and Tarabal</th><th style="width: 2%;"></th>
-            `;
+                <th style="width: 12%;">Date</th>
+                <th style="width: 12%;">Day</th>
+                <th style="width: 18%;">Nakshatra</th>
+                <th style="width: 18%;">Moonsign</th>
+                <th style="width: 20%;">Panchang Score</th>
+                <th style="width: 20%;">Chandrabal and Tarabal</th>
+                <th style="width: 5%;"></th> `;
 
-            const detailColumns = [
+            // General Details for the expanded section
+            const generalDetailColumns = [
                 { key: 'sunrise', name: 'Sunrise' }, { key: 'sunset', name: 'Sunset' },
                 { key: 'rahu_kalam', name: 'Rahu Kaal' }, { key: 'abhijit_muhurta', name: 'Abhijit Muhurta' },
                 { key: 'brahma_muhurta', name: 'Brahma Muhurta' }, { key: 'amrit_kalam', name: 'Amrit Kaal' }
@@ -388,7 +430,8 @@
 
             const allTableRows = panchangList.map(item => {
                 if (item.error) {
-                    return `<tr class="bg-red-50 text-red-700"><td colspan="11" class="px-4 py-2 text-center font-semibold">${new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}: ${item.error}</td></tr>`;
+                    // Colspan reduced to match new main row headers (6 visible + 1 expand = 7)
+                    return `<tr class="bg-red-50 text-red-700"><td colspan="7" class="px-4 py-2 text-center font-semibold">${new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}: ${item.error}</td></tr>`;
                 }
 
                 // --- Analysis Logic (Tara Bala & Chandra Bala)---
@@ -422,21 +465,47 @@
                 
                 const panchangScore = tithiScore + nakshatraScore + dayScore + karanaScore + yogaScore;
                 
-                let scoreCategory = '';
-                let scoreCategoryClass = 'text-gray-600';
-                if (panchangScore === 61) {
-                    scoreCategory = 'Very Good Panchang Score - Check Either ChandraBala or TaraBala Available';
-                    scoreCategoryClass = 'text-blue-700 font-bold';
-                } else if (panchangScore > 40) {
-                    scoreCategory = 'Good - Please Check Chandra Bal & Tarabala Before Moving Forward';
-                    scoreCategoryClass = 'text-green-600 font-semibold';
-                } else if (panchangScore > 24) {
-                    scoreCategory = 'Fair - Please Ensure Chandra Bal & Tarabala Before Moving Forward';
-                    scoreCategoryClass = 'text-yellow-600';
-                } else {
-                    scoreCategory = 'Not Recommended Due To Low Score';
-                    scoreCategoryClass = 'text-red-700 font-semibold';
+                // Logic for Main Table Panchang Score and concise advice
+                let mainTableScoreCategory = '';
+                let mainTableScoreAdvice = '';
+                let mainTableScoreCategoryClass = 'text-gray-600'; // Default, should be overridden
+
+                if (panchangScore > 60) {
+                    mainTableScoreCategory = 'Very Good';
+                    mainTableScoreAdvice = 'Check Chandra/Tara Bala';
+                    mainTableScoreCategoryClass = 'text-blue-600';
+                } else if (panchangScore > 40) { // This covers 41-60
+                    mainTableScoreCategory = 'Good';
+                    mainTableScoreAdvice = 'Check Chandra & Tara Bala';
+                    mainTableScoreCategoryClass = 'text-green-600';
+                } else if (panchangScore > 24) { // This covers 25-40
+                    mainTableScoreCategory = 'Fair';
+                    mainTableScoreAdvice = 'Ensure Chandra & Tara Bala';
+                    mainTableScoreCategoryClass = 'text-yellow-600';
+                } else { // panchangScore <= 24
+                    mainTableScoreCategory = 'Not Recommended';
+                    mainTableScoreAdvice = 'Low Score';
+                    mainTableScoreCategoryClass = 'text-red-700';
                 }
+
+
+                // Logic for Detailed Section Panchang Score Display - based on user's new statements
+                let detailScoreCategory = '';
+                let detailScoreCategoryClass = 'text-gray-600'; // Default
+                if (panchangScore > 60) {
+                    detailScoreCategory = 'Check Either ChandraBala or TaraBala Available';
+                    detailScoreCategoryClass = 'score-blue font-bold';
+                } else if (panchangScore > 40 && panchangScore <= 60) {
+                    detailScoreCategory = 'Please Check Chandra Bal & Tarabala Before Moving Forward';
+                    detailScoreCategoryClass = 'score-green font-semibold';
+                } else if (panchangScore > 24 && panchangScore <= 40) {
+                    detailScoreCategory = 'Please Ensure Chandra Bal & Tarabala Before Moving Forward';
+                    detailScoreCategoryClass = 'score-yellow';
+                } else { // panchangScore <= 24
+                    detailScoreCategory = 'Not Recommended Due To: Low Score on Panchang';
+                    detailScoreCategoryClass = 'score-red font-semibold';
+                }
+
 
                 // --- Cell Content Generation ---
                 const pakshaName = item.paksha || "N/A";
@@ -450,6 +519,7 @@
                 if (moonsignParts.length > 1) {
                    moonsignTimeInfo = `<br><span class="text-xs text-gray-500">upto ${moonsignParts[1].trim()}</span>`;
                 }
+                // Blinker is now inside the flex container, next to the text content
                 const moonsignCell = `<div class="flex items-center justify-between"><span>${mappedMoonsignName}${moonsignTimeInfo}</span><span class="blinker ${isRashiGood ? 'green-light' : 'red-light'}"></span></div>`;
                 
                 let nakshatraTimeInfo = '';
@@ -457,6 +527,7 @@
                 if (nakshatraParts.length > 1) {
                     nakshatraTimeInfo = `<span class="text-xs text-gray-500"> upto ${nakshatraParts[1].trim()}</span>`;
                 }
+                // Blinker is now inside the flex container, next to the text content
                 const nakshatraCell = `<div class="flex items-center justify-between"><span>${transitNakshatraName}<sup>${nakshatraScore}</sup>${nakshatraTimeInfo}</span><span class="blinker ${isNakshatraGood ? 'green-light' : 'red-light'}"></span></div>`;
 
                 // --- Chandrabal and Tarabal cell content ---
@@ -488,38 +559,59 @@
                 const panchangScoreContent = `
                     <div>
                         <div class="font-bold text-lg text-gray-800">${panchangScore}</div>
-                        <div class="text-xs ${scoreCategoryClass}" style="white-space: normal;">${scoreCategory}</div>
+                        <div class="text-xs ${mainTableScoreCategoryClass}" style="white-space: normal;">${mainTableScoreCategory}</div>
+                        <div class="text-xs text-gray-500" style="white-space: normal;">(${mainTableScoreAdvice})</div>
                     </div>
                 `;
 
+                // Main Row Cells (Paksha removed)
                 const mainRowCells = `
                     <td>${item.date}</td>
-                    <td class="${pakshaClass}">${pakshaName}</td>
-                    <td>${dayName}<sup>${dayScore}</sup></td>
-                    <td>${formatCellWithTime(item.tithi, tithiScore)}</td>
-                    <td>${formatCellWithTime(item.yoga, yogaScore)}</td>
-                    <td>${formatCellWithTime(item.karana, karanaScore)}</td>
+                    <td>${formatCellWithTime(dayName, dayScore)}</td>
                     <td>${nakshatraCell}</td>
                     <td>${moonsignCell}</td>
                     <td class="text-center">${panchangScoreContent}</td>
                     <td>${finalResultContent}</td>
                 `;
+                // Colspan for detail row needs to match the number of visible columns in the main row (6 + expand button column = 7)
                 const expandButtonCell = `<td class="text-center"><button class="expand-btn text-gray-600 hover:text-gray-900 focus:outline-none" data-date="${item.date}"><span class="expand-arrow">&#9658;</span></button></td>`;
-                const detailRowContent = detailColumns.map(col => {
-                    let value = formatValue(item[col.key]);
-                    let classes = "inline-block mr-6";
-                    if (col.key === 'rahu_kalam') {
-                        classes += " text-red-700 font-semibold";
-                    }
-                     if (col.key === 'abhijit_muhurta') {
-                        classes += " text-green-700 font-semibold";
-                    }
-                    return `<p class="${classes}"><strong>${col.name}:</strong> ${value}</p>`
-                }).join('');
+                
+                // Panchang Evaluation section for extended row (Paksha added here)
+                const panchangEvaluationContent = `
+                    <h3>Panchang Evaluation<span class="panchang-score-display ${detailScoreCategoryClass.replace('text-', 'bg-').replace('font-bold', '').replace('font-semibold', '')}" style="color:white; background-color: ${detailScoreCategoryClass.includes('blue') ? '#2563eb' : (detailScoreCategoryClass.includes('green') ? '#16a34a' : (detailScoreCategoryClass.includes('yellow') ? '#eab308' : '#dc2626'))};">${panchangScore}</span></h3>
+                    <p><strong>Paksha:</strong> <span class="${pakshaClass}">${pakshaName}</span></p>
+                    <p><strong>Day:</strong> ${formatCellWithTime(item.weekday, dayScore)}</p>
+                    <p><strong>Tithi:</strong> ${formatCellWithTime(item.tithi, tithiScore)}</p>
+                    <p><strong>Yoga:</strong> ${formatCellWithTime(item.yoga, yogaScore)}</p>
+                    <p><strong>Karana:</strong> ${formatCellWithTime(item.karana, karanaScore)}</p>
+                    <p><strong>Nakshatra:</strong> ${formatCellWithTime(item.nakshatra, nakshatraScore)}</p>
+                    <p class="${detailScoreCategoryClass}" style="white-space: normal;">${detailScoreCategory}</p>
+                `;
+
+                // General Details section for extended row
+                const generalDetailsContent = `
+                    <h3>General Details</h3>
+                    ${generalDetailColumns.map(col => {
+                        let value = formatValue(item[col.key]);
+                        let classes = "";
+                        if (col.key === 'rahu_kalam') { classes += " text-red-700 font-semibold"; }
+                        if (col.key === 'abhijit_muhurta') { classes += " text-green-700 font-semibold"; }
+                        return `<p class="${classes}"><strong>${col.name}:</strong> ${value}</p>`;
+                    }).join('')}
+                `;
+
+                const detailRowContent = `
+                    <div class="detail-section">
+                        ${panchangEvaluationContent}
+                    </div>
+                    <div class="detail-section">
+                        ${generalDetailsContent}
+                    </div>
+                `;
 
                 return `
                     <tr class="main-row">${mainRowCells}${expandButtonCell}</tr>
-                    <tr id="details-${item.date}" class="detail-row hidden"><td colspan="11"><div class="detail-row-content">${detailRowContent}</div></td></tr>
+                    <tr id="details-${item.date}" class="detail-row hidden"><td colspan="7"><div class="detail-row-content">${detailRowContent}</div></td></tr>
                 `;
             }).join('');
 
