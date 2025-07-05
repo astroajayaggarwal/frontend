@@ -289,7 +289,7 @@
             }
 
             try {
-                const apiUrl = `https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
+                const apiUrl = `http://127.0.0.1:5000/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
