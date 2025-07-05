@@ -305,7 +305,7 @@
                     async (position) => {
                         const { latitude: lat, longitude: lng } = position.coords;
                         try {
-                            const placeNameUrl = `https://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=${geonamesUser}`;
+                            const placeNameUrl = `http://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=${geonamesUser}`;
                             const placeResponse = await fetch(placeNameUrl);
                             const placeData = await placeResponse.json();
                             if (placeData.geonames && placeData.geonames.length > 0) {
