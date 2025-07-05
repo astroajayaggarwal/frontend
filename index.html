@@ -366,7 +366,7 @@
             suggestionsLoader.style.display = 'inline-block';
             debounceTimer = setTimeout(async () => {
                 try {
-                    const response = await fetch(`http://127.0.0.1:5000/suggest_locations?query=${encodeURIComponent(query)}`);
+                    const response = await fetch(`https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/suggest_locations?query=${encodeURIComponent(query)}`);
                     const data = await response.json();
                     if (data.suggestions && data.suggestions.length > 0) {
                         suggestionsList.innerHTML = data.suggestions.map(s => `<div data-location-name="${s.name}">${s.name}</div>`).join('');
