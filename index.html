@@ -12,9 +12,8 @@
             background: linear-gradient(135deg, #fcd34d, #ef4444, #fef3c7);
             color: #1f2937;
             min-height: 100vh;
-            /* Use a flexbox for centering, which is better for responsive layouts */
             display: flex;
-            align-items: flex-start; /* Align to top on mobile */
+            align-items: center;
             justify-content: center;
             padding: 1rem;
         }
@@ -41,7 +40,7 @@
             padding: 0.5rem 0.75rem;
             border-bottom: 1px solid #d1d5db;
             text-align: left;
-            font-size: 0.825rem;
+            font-size: 0.825rem; /* Reduced font size */
             vertical-align: middle;
             word-wrap: break-word;
         }
@@ -97,74 +96,13 @@
             border-radius: 50%; animation: blink 1.5s infinite;
             vertical-align: middle; flex-shrink: 0;
         }
-        .green-light { background-color: #22c55e; box-shadow: 0 0 6px #22c55e, 0 0 8px #a7f3d0; }
-        .red-light { background-color: #ef4444; box-shadow: 0 0 6px #ef4444, 0 0 8px #fecaca; }
-
-        /* --- MOBILE RESPONSIVE STYLES --- */
-        @media (max-width: 768px) {
-            body { align-items: flex-start; } /* Align content to the top on mobile */
-            .card { padding: 1rem; }
-            h1 { font-size: 1.875rem; } /* 30px */
-            h2 { font-size: 1.25rem; } /* 20px */
-            
-            .panchang-table thead {
-                display: none; /* Hide table headers on mobile */
-            }
-            .panchang-table, .panchang-table tbody, .panchang-table tr, .panchang-table td {
-                display: block;
-                width: 100%;
-            }
-            .panchang-table tr.main-row {
-                margin-bottom: 1rem;
-                border: 1px solid #d1d5db;
-                border-radius: 0.5rem;
-                overflow: hidden;
-            }
-            .panchang-table tr.detail-row {
-                border: none;
-                margin-bottom: 1rem;
-            }
-            .panchang-table td {
-                text-align: right; /* Align data to the right */
-                padding-left: 50%; /* Make space for the label */
-                position: relative;
-                border-bottom: 1px solid #e5e7eb;
-            }
-            .panchang-table tr.main-row td:last-child {
-                border-bottom: none;
-            }
-            .panchang-table td::before {
-                content: attr(data-label); /* Use data-label for the header */
-                position: absolute;
-                left: 0.75rem;
-                width: calc(50% - 1.5rem);
-                padding-right: 0.5rem;
-                text-align: left;
-                font-weight: 600;
-                color: #4b5563;
-            }
-            /* Special handling for complex cells to align their content correctly */
-            .panchang-table td[data-label] div {
-                 text-align: right;
-            }
-             .panchang-table td[data-label="Chandrabal and Tarabal"] div {
-                 text-align: left;
-            }
-            .panchang-table td .flex {
-                justify-content: flex-end; /* Align flex content to the right */
-            }
-            .panchang-table td[data-label="Details"] {
-                padding: 0;
-            }
-            .panchang-table .expand-btn {
-                width: 100%;
-                text-align: center;
-                padding: 0.75rem;
-                background-color: #f3f4f6;
-            }
-            .panchang-table .expand-arrow {
-                 display: block; margin: 0 auto;
-            }
+        .green-light {
+            background-color: #22c55e;
+            box-shadow: 0 0 6px #22c55e, 0 0 8px #a7f3d0;
+        }
+        .red-light {
+            background-color: #ef4444;
+            box-shadow: 0 0 6px #ef4444, 0 0 8px #fecaca;
         }
     </style>
 </head>
@@ -305,7 +243,7 @@
                     async (position) => {
                         const { latitude: lat, longitude: lng } = position.coords;
                         try {
-                            const placeNameUrl = `http://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=${geonamesUser}`;
+                            const placeNameUrl = `https://api.geonames.org/findNearestPlaceNameJSON?lat=${lat}&lng=${lng}&username=${geonamesUser}`;
                             const placeResponse = await fetch(placeNameUrl);
                             const placeData = await placeResponse.json();
                             if (placeData.geonames && placeData.geonames.length > 0) {
@@ -351,7 +289,7 @@
             }
 
             try {
-                const apiUrl = `https://panchang-api-git-main-ajay-aggarwals-projects-768dac43.vercel.app/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
+                const apiUrl = `http://127.0.0.1:5000/panchang?start_date=${startDate}&end_date=${endDate}&location=${encodeURIComponent(location)}`;
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
@@ -453,6 +391,7 @@
                     return `<tr class="bg-red-50 text-red-700"><td colspan="11" class="px-4 py-2 text-center font-semibold">${new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}: ${item.error}</td></tr>`;
                 }
 
+                // --- Analysis Logic (Tara Bala & Chandra Bala)---
                 const transitNakshatraName = (item.nakshatra || '').split(' upto ')[0].trim();
                 const transitNakshatraIndex = nakshatras.indexOf(transitNakshatraName);
                 let nakshatraCount = transitNakshatraIndex - birthNakshatraIndex;
@@ -467,8 +406,10 @@
                 if (rashiCount < 0) rashiCount += 12;
                 rashiCount = (rashiCount % 12) + 1;
                 const isRashiGood = !badRashiCounts.includes(rashiCount) && transitRashiIndex !== -1;
+                
                 const isOverallGood = isNakshatraGood && isRashiGood;
 
+                // --- Scoring Logic ---
                 const tithiName = (item.tithi || '').split(' upto ')[0].trim();
                 const tithiScore = tithiScores[tithiName] || 0;
                 const nakshatraScore = nakshatraScores[transitNakshatraName] || 0;
@@ -478,6 +419,7 @@
                 const karanaScore = karanaScores[karanaName] || 0;
                 const yogaName = (item.yoga || '').split(' upto ')[0].trim();
                 const yogaScore = yogaScores[yogaName] || 0;
+                
                 const panchangScore = tithiScore + nakshatraScore + dayScore + karanaScore + yogaScore;
                 
                 let scoreCategory = '';
@@ -496,6 +438,7 @@
                     scoreCategoryClass = 'text-red-700 font-semibold';
                 }
 
+                // --- Cell Content Generation ---
                 const pakshaName = item.paksha || "N/A";
                 const pakshaClass = pakshaName === 'Shukla Paksha' ? 'text-green-700 font-semibold' : '';
 
@@ -516,6 +459,7 @@
                 }
                 const nakshatraCell = `<div class="flex items-center justify-between"><span>${transitNakshatraName}<sup>${nakshatraScore}</sup>${nakshatraTimeInfo}</span><span class="blinker ${isNakshatraGood ? 'green-light' : 'red-light'}"></span></div>`;
 
+                // --- Chandrabal and Tarabal cell content ---
                 const taraInfo = taraBalaDescriptions[taraBalaGroup] || {type: 'Unknown', significance: ''};
                 const verdict = isOverallGood ? 'Auspicious' : 'Inauspicious';
                 const verdictClass = isOverallGood ? 'text-green-600' : 'text-red-600';
@@ -526,7 +470,7 @@
                         <div>
                             <div class="font-bold ${verdictClass}">${verdict}</div>
                             <div class="text-xs text-gray-600 font-semibold">${taraInfo.type}</div>
-                            <div class="text-xs text-gray-500" style="white-space: normal;">${taraInfo.significance}</div>
+                            <div class="text-xs text-gray-500">${taraInfo.significance}</div>
                         </div>`;
                 } else {
                     const badReasons = [];
@@ -549,22 +493,33 @@
                 `;
 
                 const mainRowCells = `
-                    <td data-label="Date">${item.date}</td>
-                    <td data-label="Paksha" class="${pakshaClass}">${pakshaName}</td>
-                    <td data-label="Day">${dayName}<sup>${dayScore}</sup></td>
-                    <td data-label="Tithi">${formatCellWithTime(item.tithi, tithiScore)}</td>
-                    <td data-label="Yoga">${formatCellWithTime(item.yoga, yogaScore)}</td>
-                    <td data-label="Karana">${formatCellWithTime(item.karana, karanaScore)}</td>
-                    <td data-label="Nakshatra">${nakshatraCell}</td>
-                    <td data-label="Moonsign">${moonsignCell}</td>
-                    <td data-label="Panchang Score">${panchangScoreContent}</td>
-                    <td data-label="Chandrabal and Tarabal">${finalResultContent}</td>
-                    <td data-label="Details"><button class="expand-btn text-gray-600 hover:text-gray-900 focus:outline-none" data-date="${item.date}"><span class="expand-arrow">&#9658;</span></button></td>
+                    <td>${item.date}</td>
+                    <td class="${pakshaClass}">${pakshaName}</td>
+                    <td>${dayName}<sup>${dayScore}</sup></td>
+                    <td>${formatCellWithTime(item.tithi, tithiScore)}</td>
+                    <td>${formatCellWithTime(item.yoga, yogaScore)}</td>
+                    <td>${formatCellWithTime(item.karana, karanaScore)}</td>
+                    <td>${nakshatraCell}</td>
+                    <td>${moonsignCell}</td>
+                    <td class="text-center">${panchangScoreContent}</td>
+                    <td>${finalResultContent}</td>
                 `;
+                const expandButtonCell = `<td class="text-center"><button class="expand-btn text-gray-600 hover:text-gray-900 focus:outline-none" data-date="${item.date}"><span class="expand-arrow">&#9658;</span></button></td>`;
+                const detailRowContent = detailColumns.map(col => {
+                    let value = formatValue(item[col.key]);
+                    let classes = "inline-block mr-6";
+                    if (col.key === 'rahu_kalam') {
+                        classes += " text-red-700 font-semibold";
+                    }
+                     if (col.key === 'abhijit_muhurta') {
+                        classes += " text-green-700 font-semibold";
+                    }
+                    return `<p class="${classes}"><strong>${col.name}:</strong> ${value}</p>`
+                }).join('');
 
                 return `
-                    <tr class="main-row">${mainRowCells.trim()}</tr>
-                    <tr id="details-${item.date}" class="detail-row hidden"><td colspan="1"><div class="detail-row-content">${detailRowContent}</div></td></tr>
+                    <tr class="main-row">${mainRowCells}${expandButtonCell}</tr>
+                    <tr id="details-${item.date}" class="detail-row hidden"><td colspan="11"><div class="detail-row-content">${detailRowContent}</div></td></tr>
                 `;
             }).join('');
 
